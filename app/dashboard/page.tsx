@@ -105,7 +105,7 @@ type Memory = {
   ];
 
   return (
-    <div className="flex min-h-screen bg-[#0a0e1a]">
+    <div className="flex h-screen bg-[#0a0e1a]">
       <Sidebar user={user} />
 
       <main className="flex-1 overflow-auto">
