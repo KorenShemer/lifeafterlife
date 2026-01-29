@@ -18,16 +18,6 @@ const nextConfig = {
     ],
   },
 
-  async redirects() {
-    return [
-      {
-        source: '/',
-        destination: '/dashboard',
-        permanent: true, // Use 'false' if this is a temporary change
-      },
-    ];
-  },
-
   experimental: {
     reactCompiler: true, // Enable React Compiler
   },
