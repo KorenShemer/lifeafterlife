@@ -4,6 +4,8 @@ import React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Shield, FileText, Users, Settings, HeartPulse } from "lucide-react";
+import Image from "next/image"; // Import Image from next/image
+
 
 interface SidebarProps {
   user: {
@@ -13,7 +15,7 @@ interface SidebarProps {
   };
 }
 
-export const Sidebar: React.FC<SidebarProps> = ({ user }) => {
+export const Sidebar: React.FC<SidebarProps> = ({}) => {
   const pathname = usePathname();
 
   const navItems = [
@@ -39,11 +41,11 @@ export const Sidebar: React.FC<SidebarProps> = ({ user }) => {
       {/* Logo */}
       <div className="p-6 border-b border-gray-800">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-gradient-to-br from-emerald-400 to-teal-500 rounded-lg flex items-center justify-center">
-            <Shield className="w-6 h-6 text-white" />
+          <div className="w-10 h-10 flex items-center justify-center">
+            <Image src="/logo.png" alt="Life After Life" width={24} height={24} className="w-10 h-10" />
           </div>
           <div>
-            <h1 className="text-white font-semibold">Legacy Vault</h1>
+            <h1 className="text-white font-semibold">Life After Life</h1>
             <p className="text-xs text-gray-500">Secure Memories</p>
           </div>
         </div>

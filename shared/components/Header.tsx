@@ -1,8 +1,6 @@
 // shared/components/Header.tsx
 "use client";
-
-import { Bell } from "lucide-react";
-import { SearchInput } from "./SearchInput";
+;
 import { Avatar } from "./Avatar";
 
 interface HeaderProps {
@@ -29,11 +27,6 @@ export const Header = ({ user, lastVerified }: HeaderProps) => {
           </p>
         </div>
         <div className="flex items-center gap-3">
-          <SearchInput placeholder="Search memories..." className="w-56" />
-          <button className="relative p-2 text-gray-400 hover:text-white transition">
-            <Bell className="w-5 h-5" />
-            <span className="absolute top-1 right-1 w-2 h-2 bg-emerald-400 rounded-full"></span>
-          </button>
           <div className="flex items-center gap-2 pl-3 border-l border-gray-700">
             <div className="text-right">
               <div className="text-sm font-medium text-white">

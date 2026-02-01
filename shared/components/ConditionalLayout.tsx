@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import { Sidebar } from "./Sidebar";
 import { Header } from "./Header";
 import { ReactNode } from "react";
-import { PageTransition } from "./PageTransition";
+
 
 interface ConditionalLayoutProps {
   children: ReactNode;
