@@ -7,7 +7,6 @@ import {
   AlertTriangle,
   AlertCircle,
   Heart,
-  ArrowLeft,
   Send,
 } from "lucide-react";
 import { Card, Button, Badge } from "../../shared/components";
@@ -30,7 +29,7 @@ export default function ProofOfLifePage() {
 
   return (
     <PageTransition>
-      <div className="p-5 space-y-4">
+      <div className="p-5 space-y-5">
         {/* Header */}
         <div className="flex items-center gap-3 mb-4">
           <div>
@@ -89,22 +88,22 @@ export default function ProofOfLifePage() {
 
           {/* Right Card - Custom Timeline */}
           <Card className="lg:col-span-3">
-            <div className="flex items-center gap-2 mb-6">
+            <div className="flex items-center gap-2 mb-5">
               <Clock className="w-5 h-5 text-emerald-400" />
               <h3 className="text-lg font-bold text-white">
                 Custom Verification Timeline
               </h3>
             </div>
 
-            <div className="space-y-6">
+            <div className="space-y-5">
               {/* 1. Routine Check-in */}
-              <div className="space-y-2">
+              <div className="space-y-2.5">
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2.5">
                     <div className="w-6 h-6 rounded-full bg-emerald-500 flex items-center justify-center text-white text-xs font-bold">
                       1
                     </div>
-                    <span className="text-white font-medium">
+                    <span className="text-white font-medium text-sm">
                       Routine Check-in
                     </span>
                   </div>
@@ -115,21 +114,32 @@ export default function ProofOfLifePage() {
                       onChange={(e) =>
                         setRoutineCheckIn(Number(e.target.value))
                       }
-                      className="w-14 px-2 py-1 bg-gray-900 border border-gray-700 rounded text-white text-sm text-center focus:outline-none focus:border-emerald-500"
+                      className="w-16 px-2 py-1.5 bg-gray-900 border border-gray-700 rounded text-white text-sm text-center focus:outline-none focus:border-emerald-500"
                       min="1"
                       max="90"
                     />
-                    <span className="text-gray-400 text-xs">days</span>
+                    <span className="text-gray-400 text-sm">days</span>
                   </div>
                 </div>
-                <input
-                  type="range"
-                  value={routineCheckIn}
-                  onChange={(e) => setRoutineCheckIn(Number(e.target.value))}
-                  min="1"
-                  max="90"
-                  className="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer slider-emerald"
-                />
+
+                {/* Range slider with fill */}
+                <div className="relative">
+                  <div className="h-1.5 bg-gray-800 rounded-full overflow-hidden">
+                    <div
+                      className="h-full bg-emerald-500"
+                      style={{ width: `${(routineCheckIn / 90) * 100}%` }}
+                    />
+                  </div>
+                  <input
+                    type="range"
+                    value={routineCheckIn}
+                    onChange={(e) => setRoutineCheckIn(Number(e.target.value))}
+                    min="1"
+                    max="90"
+                    className="absolute top-0 w-full h-1.5 appearance-none bg-transparent cursor-pointer slider-emerald"
+                  />
+                </div>
+
                 <p className="text-xs text-gray-500">
                   First WhatsApp verification on{" "}
                   <span className="text-emerald-400 font-medium">
@@ -139,40 +149,54 @@ export default function ProofOfLifePage() {
               </div>
 
               {/* 2. First Warning */}
-              <div className="space-y-2">
+              <div className="space-y-2.5">
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2.5">
                     <div className="w-6 h-6 rounded-full bg-yellow-500 flex items-center justify-center text-white text-xs font-bold">
                       2
                     </div>
-                    <span className="text-white font-medium">
+                    <span className="text-white font-medium text-sm">
                       First Warning
                     </span>
                   </div>
                   <div className="flex items-center gap-2">
+                    <span className="text-gray-400 text-sm">+</span>
                     <input
                       type="number"
                       value={firstWarningOffset}
                       onChange={(e) =>
                         setFirstWarningOffset(Number(e.target.value))
                       }
-                      className="w-14 px-2 py-1 bg-gray-900 border border-gray-700 rounded text-white text-sm text-center focus:outline-none focus:border-yellow-500"
+                      className="w-16 px-2 py-1.5 bg-gray-900 border border-gray-700 rounded text-white text-sm text-center focus:outline-none focus:border-yellow-500"
                       min="1"
                       max="30"
                     />
-                    <span className="text-gray-400 text-xs">days</span>
+                    <span className="text-gray-400 text-sm">days after</span>
                   </div>
                 </div>
-                <input
-                  type="range"
-                  value={firstWarningOffset}
-                  onChange={(e) =>
-                    setFirstWarningOffset(Number(e.target.value))
-                  }
-                  min="1"
-                  max="30"
-                  className="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer slider-yellow"
-                />
+
+                {/* Range slider with fill */}
+                <div className="relative">
+                  <div className="h-1.5 bg-gray-800 rounded-full overflow-hidden">
+                    <div
+                      className="h-full bg-yellow-500"
+                      style={{
+                        width: `${((firstWarningOffset - 1) / 29) * 100}%`,
+                      }}
+                    />
+                  </div>
+                  <input
+                    type="range"
+                    value={firstWarningOffset}
+                    onChange={(e) =>
+                      setFirstWarningOffset(Number(e.target.value))
+                    }
+                    min="1"
+                    max="30"
+                    className="absolute top-0 w-full h-1.5 appearance-none bg-transparent cursor-pointer slider-yellow"
+                  />
+                </div>
+
                 <p className="text-xs text-gray-500">
                   Warning on{" "}
                   <span className="text-yellow-400 font-medium">
@@ -182,40 +206,54 @@ export default function ProofOfLifePage() {
               </div>
 
               {/* 3. Final Warning */}
-              <div className="space-y-2">
+              <div className="space-y-2.5">
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2.5">
                     <div className="w-6 h-6 rounded-full bg-red-500 flex items-center justify-center text-white text-xs font-bold">
                       3
                     </div>
-                    <span className="text-white font-medium">
+                    <span className="text-white font-medium text-sm">
                       Final Warning
                     </span>
                   </div>
                   <div className="flex items-center gap-2">
+                    <span className="text-gray-400 text-sm">+</span>
                     <input
                       type="number"
                       value={finalWarningOffset}
                       onChange={(e) =>
                         setFinalWarningOffset(Number(e.target.value))
                       }
-                      className="w-14 px-2 py-1 bg-gray-900 border border-gray-700 rounded text-white text-sm text-center focus:outline-none focus:border-red-500"
+                      className="w-16 px-2 py-1.5 bg-gray-900 border border-gray-700 rounded text-white text-sm text-center focus:outline-none focus:border-red-500"
                       min="1"
                       max="30"
                     />
-                    <span className="text-gray-400 text-xs">days</span>
+                    <span className="text-gray-400 text-sm">days after</span>
                   </div>
                 </div>
-                <input
-                  type="range"
-                  value={finalWarningOffset}
-                  onChange={(e) =>
-                    setFinalWarningOffset(Number(e.target.value))
-                  }
-                  min="1"
-                  max="30"
-                  className="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer slider-red"
-                />
+
+                {/* Range slider with fill */}
+                <div className="relative">
+                  <div className="h-1.5 bg-gray-800 rounded-full overflow-hidden">
+                    <div
+                      className="h-full bg-red-500"
+                      style={{
+                        width: `${((finalWarningOffset - 1) / 29) * 100}%`,
+                      }}
+                    />
+                  </div>
+                  <input
+                    type="range"
+                    value={finalWarningOffset}
+                    onChange={(e) =>
+                      setFinalWarningOffset(Number(e.target.value))
+                    }
+                    min="1"
+                    max="30"
+                    className="absolute top-0 w-full h-1.5 appearance-none bg-transparent cursor-pointer slider-red"
+                  />
+                </div>
+
                 <p className="text-xs text-gray-500">
                   Critical alert on{" "}
                   <span className="text-red-400 font-medium">
@@ -224,38 +262,29 @@ export default function ProofOfLifePage() {
                 </p>
               </div>
 
-              {/* 4. Legacy Release */}
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <div className="w-6 h-6 rounded-full bg-pink-500 flex items-center justify-center text-white text-xs font-bold">
-                      4
-                    </div>
-                    <span className="text-white font-medium">
-                      Legacy Release
-                    </span>
+              {/* 4. Legacy Release & Total Grace Period Combined */}
+              <div className="flex items-center justify-between pt-3 border-t border-gray-800">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-6 h-6 rounded-full bg-pink-500 flex items-center justify-center text-white text-xs font-bold">
+                    4
+                  </div>
+                  <span className="text-white font-medium text-sm">
+                    Legacy Release
+                  </span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <div className="text-right">
+                    <p className="text-xs text-gray-400">Total Grace Period</p>
+                    <p className="text-xl font-bold text-emerald-400">
+                      {totalGracePeriod} days
+                    </p>
                   </div>
                   <Badge
                     variant="default"
-                    className="bg-pink-500/20 text-pink-400 border-pink-500/30"
+                    className="bg-pink-500/20 text-pink-400 border-pink-500/30 text-xs px-2.5 py-1"
                   >
                     Day {legacyReleaseDay}
                   </Badge>
-                </div>
-              </div>
-
-              {/* Total Grace Period */}
-              <div className="pt-4 border-t border-gray-800">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Clock className="w-4 h-4 text-gray-400" />
-                    <span className="text-gray-300 font-medium">
-                      Total Grace Period
-                    </span>
-                  </div>
-                  <span className="text-2xl font-bold text-emerald-400">
-                    {totalGracePeriod} days
-                  </span>
                 </div>
               </div>
             </div>
@@ -264,7 +293,7 @@ export default function ProofOfLifePage() {
 
         {/* Verification Cycle Timeline */}
         <Card>
-          <h3 className="text-lg font-bold text-white mb-6">
+          <h3 className="text-lg font-bold text-white mb-5">
             Your Verification Cycle
           </h3>
 
@@ -280,11 +309,11 @@ export default function ProofOfLifePage() {
                 <time className="bg-gray-800 border border-gray-700 text-gray-300 text-xs font-medium px-1.5 py-0.5 rounded">
                   Day 0
                 </time>
-                <h3 className="text-base font-semibold text-white my-2">
+                <h3 className="text-sm font-semibold text-white my-2">
                   Routine Check-in
                 </h3>
-                <p className="text-sm text-gray-400 mb-3">
-                  Initial verification to start your 30-day cycle.
+                <p className="text-sm text-gray-400">
+                  Initial verification to start your cycle.
                 </p>
               </div>
             </li>
@@ -300,11 +329,11 @@ export default function ProofOfLifePage() {
                 <time className="bg-gray-800 border border-gray-700 text-gray-300 text-xs font-medium px-1.5 py-0.5 rounded">
                   Day {firstWarningDay}
                 </time>
-                <h3 className="text-base font-semibold text-white my-2">
+                <h3 className="text-sm font-semibold text-white my-2">
                   First Warning
                 </h3>
-                <p className="text-sm text-gray-400 mb-3">
-                  You&apos;ll receive a warning notification via WhatsApp.
+                <p className="text-sm text-gray-400">
+                  Warning notification via WhatsApp.
                 </p>
               </div>
             </li>
@@ -320,11 +349,11 @@ export default function ProofOfLifePage() {
                 <time className="bg-gray-800 border border-gray-700 text-gray-300 text-xs font-medium px-1.5 py-0.5 rounded">
                   Day {finalWarningDay}
                 </time>
-                <h3 className="text-base font-semibold text-white my-2">
+                <h3 className="text-sm font-semibold text-white my-2">
                   Final Warning
                 </h3>
-                <p className="text-sm text-gray-400 mb-3">
-                  Critical alert - immediate action required.
+                <p className="text-sm text-gray-400">
+                  Critical alert - action required.
                 </p>
               </div>
             </li>
@@ -339,11 +368,11 @@ export default function ProofOfLifePage() {
                 <time className="bg-gray-800 border border-gray-700 text-gray-300 text-xs font-medium px-1.5 py-0.5 rounded">
                   Day {legacyReleaseDay}
                 </time>
-                <h3 className="text-base font-semibold text-white my-2">
+                <h3 className="text-sm font-semibold text-white my-2">
                   Legacy Release
                 </h3>
-                <p className="text-sm text-gray-400 mb-3">
-                  Your digital legacy will be released to designated contacts.
+                <p className="text-sm text-gray-400">
+                  Legacy released to contacts.
                 </p>
               </div>
             </li>
@@ -354,7 +383,7 @@ export default function ProofOfLifePage() {
         <Card>
           <div className="flex items-center gap-2 mb-4">
             <Send className="w-5 h-5 text-emerald-400" />
-            <h3 className="text-lg font-bold text-white">
+            <h3 className="text-base font-bold text-white">
               Verification Method
             </h3>
           </div>
@@ -373,12 +402,12 @@ export default function ProofOfLifePage() {
             </div>
             <Button variant="secondary" size="sm">
               <Send className="w-4 h-4" />
-              Test Connection
+              Test
             </Button>
           </div>
         </Card>
 
-        {/* Save Button */}
+        {/* Save Buttons */}
         <div className="flex justify-end gap-3">
           <Button variant="secondary">Cancel</Button>
           <Button variant="primary">
@@ -391,59 +420,60 @@ export default function ProofOfLifePage() {
       <style jsx>{`
         .slider-emerald::-webkit-slider-thumb {
           appearance: none;
-          width: 18px;
-          height: 18px;
+          width: 16px;
+          height: 16px;
           border-radius: 50%;
-          background: #10b981;
+          background: white;
           cursor: pointer;
-          border: 2px solid #065f46;
+          border: none;
+          position: relative;
         }
 
         .slider-emerald::-moz-range-thumb {
-          width: 18px;
-          height: 18px;
+          width: 16px;
+          height: 16px;
           border-radius: 50%;
-          background: #10b981;
+          background: white;
           cursor: pointer;
-          border: 2px solid #065f46;
+          border: none;
         }
 
         .slider-yellow::-webkit-slider-thumb {
           appearance: none;
-          width: 18px;
-          height: 18px;
+          width: 16px;
+          height: 16px;
           border-radius: 50%;
-          background: #eab308;
+          background: white;
           cursor: pointer;
-          border: 2px solid #854d0e;
+          border: none;
         }
 
         .slider-yellow::-moz-range-thumb {
-          width: 18px;
-          height: 18px;
+          width: 16px;
+          height: 16px;
           border-radius: 50%;
-          background: #eab308;
+          background: white;
           cursor: pointer;
-          border: 2px solid #854d0e;
+          border: none;
         }
 
         .slider-red::-webkit-slider-thumb {
           appearance: none;
-          width: 18px;
-          height: 18px;
+          width: 16px;
+          height: 16px;
           border-radius: 50%;
-          background: #ef4444;
+          background: white;
           cursor: pointer;
-          border: 2px solid #991b1b;
+          border: none;
         }
 
         .slider-red::-moz-range-thumb {
-          width: 18px;
-          height: 18px;
+          width: 16px;
+          height: 16px;
           border-radius: 50%;
-          background: #ef4444;
+          background: white;
           cursor: pointer;
-          border: 2px solid #991b1b;
+          border: none;
         }
       `}</style>
     </PageTransition>
