@@ -18,7 +18,7 @@ This script will automatically create your entire backend structure for the Proo
 ### Lib Files
 - `/lib/supabase/server.ts` - Server-side Supabase client
 - `/lib/supabase/client.ts` - Client-side Supabase client
-- `/lib/supabase/middleware.ts` - Session management
+- `/lib/supabase/proxy.ts` - Session management
 - `/lib/types/database.types.ts` - TypeScript database types
 
 ### Root Files
