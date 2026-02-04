@@ -6,7 +6,6 @@ import { usePathname } from "next/navigation";
 import { Shield, FileText, Users, Settings, HeartPulse } from "lucide-react";
 import Image from "next/image"; // Import Image from next/image
 
-
 interface SidebarProps {
   user: {
     name: string;
@@ -42,7 +41,13 @@ export const Sidebar: React.FC<SidebarProps> = ({}) => {
       <div className="p-6 border-b border-gray-800">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 flex items-center justify-center">
-            <Image src="/logo.png" alt="Life After Life" width={24} height={24} className="w-10 h-10" />
+            <Image
+              src="/logo.png"
+              alt="Life After Life"
+              width={24}
+              height={24}
+              className="w-10 h-10"
+            />
           </div>
           <div>
             <h1 className="text-white font-semibold">Life After Life</h1>
@@ -86,13 +91,6 @@ export const Sidebar: React.FC<SidebarProps> = ({}) => {
           <Settings className="w-5 h-5" />
           <span className="font-medium">Account Settings</span>
         </Link>
-
-        <div className="mt-4 px-4 py-3 rounded-lg bg-gray-800/30 border border-gray-800">
-          <div className="flex items-center gap-2 text-xs text-gray-500">
-            <Shield className="w-4 h-4 text-emerald-400" />
-            <span>End-to-end encrypted</span>
-          </div>
-        </div>
       </div>
     </aside>
   );
