@@ -12,3 +12,5 @@ export { CircularProgress } from './CircularProgress';
 export { Sidebar } from './Sidebar';
 export { MemoryCard } from './MemoryCard';
 export { RecipientCard } from './RecipientCard';
+export { Header } from "./Header";
+// ... your other exports
