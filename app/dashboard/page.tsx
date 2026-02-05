@@ -6,7 +6,6 @@ import {
   Shield,
   CheckCircle,
   Users,
-  HardDrive,
   FileText,
   Settings,
 } from "lucide-react";
@@ -27,8 +26,6 @@ export default function DashboardPage() {
   const stats = {
     totalMemories: 6,
     scheduledRecipients: 5,
-    storageUsed: 2.4,
-    storageTotal: 10,
   };
 
   const proofOfLife = {
@@ -168,13 +165,6 @@ export default function DashboardPage() {
             label="Recipients"
             sublabel="Active"
             icon={Users}
-          />
-
-          <StatCard
-            value={`${stats.storageUsed} GB`}
-            label="Storage Used"
-            sublabel={`of ${stats.storageTotal} GB`}
-            icon={HardDrive}
           />
         </div>
 
