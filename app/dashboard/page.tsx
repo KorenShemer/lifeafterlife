@@ -1,6 +1,8 @@
 // app/dashboard/page.tsx
 "use client";
 
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import {
   Plus,
   Shield,
@@ -21,79 +23,193 @@ import {
   RecipientCard,
 } from "../../shared/components";
 import { PageTransition } from "@/shared/components/PageTransition";
+import { createClient } from "@/lib/supabase/client";
+import type { Database } from "@/lib/types/database.types";
+
+type DbMemory = Database['public']['Tables']['memories']['Row'];
+type DbRecipient = Database['public']['Tables']['recipients']['Row'];
+type CheckIn = Database['public']['Tables']['checkins']['Row'];
+
+// Component types (what your components expect)
+type Memory = {
+  id: number;
+  type: "text" | "photos";
+  title: string;
+  preview?: string;
+  photoCount?: number;
+  recipients: string[];
+  recipientCount: number;
+  date: string;
+};
+
+type Recipient = {
+  id: number;
+  name: string;
+  email: string;
+  initials: string;
+  verified: boolean;
+  memoryCount: number;
+};
 
 export default function DashboardPage() {
+  const router = useRouter();
+  const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState<any>(null);
+  const [memories, setMemories] = useState<DbMemory[]>([]);
+  const [recipients, setRecipients] = useState<DbRecipient[]>([]);
+  const [lastCheckIn, setLastCheckIn] = useState<CheckIn | null>(null);
+
+  useEffect(() => {
+    fetchDashboardData();
+  }, []);
+
+  const fetchDashboardData = async () => {
+    try {
+      const supabase = createClient();
+
+      // Get authenticated user
+      const { data: { user: authUser }, error: authError } = await supabase.auth.getUser();
+      
+      if (authError || !authUser) {
+        router.push('/login');
+        return;
+      }
+
+      setUser(authUser);
+
+      // Fetch memories
+      const { data: memoriesData } = await supabase
+        .from('memories')
+        .select('*')
+        .eq('user_id', authUser.id)
+        .order('created_at', { ascending: false })
+        .limit(5);
+
+      if (memoriesData) setMemories(memoriesData);
+
+      // Fetch recipients
+      const { data: recipientsData } = await supabase
+        .from('recipients')
+        .select('*')
+        .eq('user_id', authUser.id)
+        .order('created_at', { ascending: false })
+        .limit(5);
+
+      if (recipientsData) setRecipients(recipientsData);
+
+      // Fetch last check-in
+      const { data: checkInData } = await supabase
+        .from('checkins')
+        .select('*')
+        .eq('user_id', authUser.id)
+        .order('checked_in_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (checkInData) setLastCheckIn(checkInData);
+
+    } catch (error) {
+      console.error('Error fetching dashboard data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const calculateProofOfLife = () => {
+    if (!lastCheckIn) {
+      return {
+        daysLeft: 60,
+        currentDay: 0,
+        totalDays: 60,
+        nextVerificationDays: 60,
+        isVerified: false,
+      };
+    }
+
+    const lastCheckInDate = new Date(lastCheckIn.checked_in_at);
+    const now = new Date();
+    const daysSinceCheckIn = Math.floor((now.getTime() - lastCheckInDate.getTime()) / (1000 * 60 * 60 * 24));
+    const totalDays = 60; // Default check-in period
+    const daysLeft = Math.max(0, totalDays - daysSinceCheckIn);
+
+    return {
+      daysLeft,
+      currentDay: Math.min(daysSinceCheckIn, totalDays),
+      totalDays,
+      nextVerificationDays: daysLeft,
+      isVerified: daysSinceCheckIn < totalDays,
+    };
+  };
+
+  const handleVerifyNow = async () => {
+    try {
+      const supabase = createClient();
+      const { data: { user: authUser } } = await supabase.auth.getUser();
+      
+      if (!authUser) return;
+
+      const { error } = await supabase
+        .from('checkins')
+        .insert({
+          user_id: authUser.id,
+          method: 'manual',
+          status: 'verified',
+          checked_in_at: new Date().toISOString(),
+        });
+
+      if (!error) {
+        // Refresh data
+        fetchDashboardData();
+      }
+    } catch (error) {
+      console.error('Error verifying:', error);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <div className="text-white">Loading...</div>
+      </div>
+    );
+  }
+
+  const proofOfLife = calculateProofOfLife();
   const stats = {
-    totalMemories: 6,
-    scheduledRecipients: 5,
+    totalMemories: memories.length,
+    scheduledRecipients: recipients.length,
   };
 
-  const proofOfLife = {
-    daysLeft: 14,
-    currentDay: 16,
-    totalDays: 60,
-    nextVerificationDays: 14,
-    isVerified: true,
-  };
+  // Format memories for display - convert DB types to component types
+  const formattedMemories: Memory[] = memories.map((memory, index) => ({
+    id: index + 1, // Use index as numeric ID for display
+    type: (memory.media_type === 'image' ? 'photos' : 'text') as "text" | "photos",
+    title: memory.title,
+    preview: memory.content?.substring(0, 50),
+    photoCount: memory.media_type === 'image' ? 1 : undefined,
+    recipients: [], // You'll need to join with memory_recipients table
+    recipientCount: 0, // Same as above
+    date: new Date(memory.created_at).toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+    }),
+  }));
 
-  type Memory = {
-    id: number;
-    type: "text" | "photos";
-    title: string;
-    preview?: string;
-    photoCount?: number;
-    recipients: string[];
-    recipientCount: number;
-    date: string;
-  };
-
-  const memories: Memory[] = [
-    {
-      id: 1,
-      type: "text",
-      title: "Letter to My Children",
-      preview: "My dearest Emma and James, if you're reading this...",
-      recipients: ["Emma", "James"],
-      recipientCount: 2,
-      date: "Dec 15, 2025",
-    },
-    {
-      id: 2,
-      type: "photos",
-      title: "Family Photos - Summer 2024",
-      photoCount: 12,
-      recipients: ["Emma", "James"],
-      recipientCount: 3,
-      date: "Nov 28, 2025",
-    },
-  ];
-
-  const recipients = [
-    {
-      id: 1,
-      name: "Emma Johnson",
-      email: "emma.j@email.com",
-      initials: "EJ",
-      verified: true,
-      memoryCount: 4,
-    },
-    {
-      id: 2,
-      name: "James Johnson",
-      email: "james.j@email.com",
-      initials: "JJ",
-      verified: true,
-      memoryCount: 5,
-    },
-    {
-      id: 3,
-      name: "Michael Chen",
-      email: "m.chen@email.com",
-      initials: "MC",
-      verified: false,
-      memoryCount: 2,
-    },
-  ];
+  // Format recipients for display - convert DB types to component types
+  const formattedRecipients: Recipient[] = recipients.map((recipient, index) => ({
+    id: index + 1, // Use index as numeric ID for display
+    name: recipient.name,
+    email: recipient.email,
+    initials: recipient.name
+      .split(' ')
+      .map((n) => n[0])
+      .join('')
+      .toUpperCase()
+      .substring(0, 2),
+    verified: true, // You might want to add a verified field to recipients table
+    memoryCount: 0, // You'll need to count from memory_recipients table
+  }));
 
   return (
     <PageTransition>
@@ -107,9 +223,9 @@ export default function DashboardPage() {
                 <Shield className="w-5 h-5 text-emerald-400" />
                 <h3 className="text-white font-semibold">Proof of Life</h3>
               </div>
-              <Badge variant="success">
+              <Badge variant={proofOfLife.isVerified ? "success" : "error"}>
                 <CheckCircle className="w-3 h-3" />
-                Verified
+                {proofOfLife.isVerified ? "Verified" : "Needs Verification"}
               </Badge>
             </div>
 
@@ -124,7 +240,7 @@ export default function DashboardPage() {
 
             <div className="text-center text-sm text-gray-400 mb-3">
               Next verification in{" "}
-              <span className="text-emerald-400 font-medium">
+              <span className={`font-medium ${proofOfLife.daysLeft < 7 ? 'text-red-400' : 'text-emerald-400'}`}>
                 {proofOfLife.nextVerificationDays} days
               </span>
             </div>
@@ -137,11 +253,19 @@ export default function DashboardPage() {
             />
 
             <div className="space-y-2 mt-3">
-              <Button variant="primary" className="w-full">
+              <Button 
+                variant="primary" 
+                className="w-full"
+                onClick={handleVerifyNow}
+              >
                 <CheckCircle className="w-4 h-4" />
                 Verify Now
               </Button>
-              <Button variant="secondary" className="w-full">
+              <Button 
+                variant="secondary" 
+                className="w-full"
+                onClick={() => router.push('/settings')}
+              >
                 <Settings className="w-4 h-4" />
                 View Settings
               </Button>
@@ -175,10 +299,17 @@ export default function DashboardPage() {
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-bold text-white">Your Memories</h3>
               <div className="flex items-center gap-2">
-                <button className="text-sm text-emerald-400 hover:text-emerald-300">
+                <button 
+                  className="text-sm text-emerald-400 hover:text-emerald-300"
+                  onClick={() => router.push('/memories')}
+                >
                   View All
                 </button>
-                <Button variant="primary" size="sm">
+                <Button 
+                  variant="primary" 
+                  size="sm"
+                  onClick={() => router.push('/memories/new')}
+                >
                   <Plus className="w-4 h-4" />
                   New Memory
                 </Button>
@@ -186,9 +317,17 @@ export default function DashboardPage() {
             </div>
 
             <div className="space-y-3">
-              {memories.map((memory) => (
-                <MemoryCard key={memory.id} memory={memory} />
-              ))}
+              {formattedMemories.length > 0 ? (
+                formattedMemories.map((memory) => (
+                  <MemoryCard key={memory.id} memory={memory} />
+                ))
+              ) : (
+                <div className="text-center py-8 text-gray-400">
+                  <FileText className="w-12 h-12 mx-auto mb-3 opacity-50" />
+                  <p>No memories yet</p>
+                  <p className="text-sm mt-1">Create your first memory to get started</p>
+                </div>
+              )}
             </div>
           </Card>
 
@@ -196,16 +335,28 @@ export default function DashboardPage() {
           <Card>
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-bold text-white">Recipients</h3>
-              <Button variant="primary" size="sm">
+              <Button 
+                variant="primary" 
+                size="sm"
+                onClick={() => router.push('/recipients')}
+              >
                 <Plus className="w-4 h-4" />
                 Add
               </Button>
             </div>
 
             <div className="space-y-2.5">
-              {recipients.map((recipient) => (
-                <RecipientCard key={recipient.id} recipient={recipient} />
-              ))}
+              {formattedRecipients.length > 0 ? (
+                formattedRecipients.map((recipient) => (
+                  <RecipientCard key={recipient.id} recipient={recipient} />
+                ))
+              ) : (
+                <div className="text-center py-8 text-gray-400">
+                  <Users className="w-12 h-12 mx-auto mb-3 opacity-50" />
+                  <p>No recipients yet</p>
+                  <p className="text-sm mt-1">Add recipients to share your memories</p>
+                </div>
+              )}
             </div>
           </Card>
         </div>

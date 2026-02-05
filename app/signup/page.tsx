@@ -1,5 +1,6 @@
-import OnboardingForm from '@/shared/components/OnBoardingForm';
+import Signup from '@/shared/components/SignUp';
 
-export default function OnboardingPage() {
-  return <OnboardingForm />;
+export default function SignUpPage() {
+  return <Signup />;
 }
+

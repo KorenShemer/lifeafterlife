@@ -4,7 +4,7 @@ import { createClient } from '@/lib/supabase/server';
 export async function POST(request: NextRequest) {
   try {
     const { email, password } = await request.json();
-    const supabase = createClient();
+    const supabase = await createClient(); // <- Add await here
 
     const { data, error } = await supabase.auth.signUp({
       email,
@@ -17,6 +17,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ user: data.user, session: data.session });
   } catch (error) {
+    console.error('Signup error:', error); // Add logging to see actual error
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

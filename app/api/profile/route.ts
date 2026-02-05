@@ -4,7 +4,7 @@ import { createClient } from '@/lib/supabase/server';
 // GET /api/profile - Get current user's profile
 export async function GET(request: NextRequest) {
   try {
-    const supabase = createClient();
+    const supabase = await createClient();
     const { data: { user }, error: authError } = await supabase.auth.getUser();
 
     if (authError || !user) {
@@ -23,6 +23,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({ profile });
   } catch (error) {
+    console.error('❌ GET Profile Error:', error instanceof Error ? error.message : 'Unknown error');
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
@@ -32,13 +33,30 @@ export async function GET(request: NextRequest) {
 
 // PUT /api/profile - Update user profile
 export async function PUT(request: NextRequest) {
+  console.log('🔵 PUT /api/profile called');
+  
   try {
-    const supabase = createClient();
+    console.log('🔵 Creating Supabase client...');
+    const supabase = await createClient();
+    
+    console.log('🔵 Getting authenticated user...');
     const { data: { user }, error: authError } = await supabase.auth.getUser();
 
-    if (authError || !user) {
+    if (authError) {
+      console.error('❌ Auth error:', authError);
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
+    
+    if (!user) {
+      console.error('❌ No user found');
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    console.log('✅ User authenticated:', user.id, user.email);
+
+    console.log('🔵 Parsing request body...');
+    const body = await request.json();
+    console.log('✅ Request body:', JSON.stringify(body, null, 2));
 
     const { 
       username, 
@@ -48,23 +66,30 @@ export async function PUT(request: NextRequest) {
       bio, 
       avatar_url,
       profile_completed 
-    } = await request.json();
+    } = body;
 
     // Check if username is already taken (if changing username)
     if (username) {
-      const { data: existingUser } = await supabase
+      console.log('🔵 Checking if username is taken:', username);
+      const { data: existingUser, error: checkError } = await supabase
         .from('users')
         .select('id')
         .eq('username', username.toLowerCase())
         .neq('id', user.id)
         .single();
 
+      if (checkError && checkError.code !== 'PGRST116') {
+        console.error('❌ Username check error:', checkError);
+      }
+
       if (existingUser) {
+        console.log('❌ Username already taken');
         return NextResponse.json(
           { error: 'Username already taken' },
           { status: 400 }
         );
       }
+      console.log('✅ Username available');
     }
 
     const updates: any = {
@@ -84,6 +109,9 @@ export async function PUT(request: NextRequest) {
       }
     }
 
+    console.log('🔵 Updates to apply:', JSON.stringify(updates, null, 2));
+
+    console.log('🔵 Updating profile in database...');
     const { data: profile, error } = await supabase
       .from('users')
       .update(updates)
@@ -92,58 +120,34 @@ export async function PUT(request: NextRequest) {
       .single();
 
     if (error) {
-      return NextResponse.json({ error: error.message }, { status: 400 });
+      console.error('❌ Supabase update error:', {
+        message: error.message,
+        code: error.code,
+        details: error.details,
+        hint: error.hint
+      });
+      return NextResponse.json({ 
+        error: error.message, 
+        code: error.code,
+        hint: error.hint 
+      }, { status: 400 });
     }
 
+    console.log('✅ Profile updated successfully!');
+    console.log('✅ Updated profile:', JSON.stringify(profile, null, 2));
+    
     return NextResponse.json({ profile });
   } catch (error) {
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
-  }
-}
-
-// POST /api/profile/check-username - Check if username is available
-export async function POST(request: NextRequest) {
-  try {
-    const supabase = createClient();
-    const { username } = await request.json();
-
-    if (!username || username.length < 3 || username.length > 30) {
-      return NextResponse.json(
-        { available: false, error: 'Username must be 3-30 characters' },
-        { status: 400 }
-      );
+    console.error('❌❌❌ CAUGHT ERROR ❌❌❌');
+    console.error('Error:', error);
+    if (error instanceof Error) {
+      console.error('Error message:', error.message);
+      console.error('Error stack:', error.stack);
+      console.error('Error name:', error.name);
     }
-
-    const cleanUsername = username.toLowerCase().trim();
     
-    // Check format
-    if (!/^[a-z0-9_-]+$/.test(cleanUsername)) {
-      return NextResponse.json(
-        { available: false, error: 'Username can only contain lowercase letters, numbers, underscores, and dashes' },
-        { status: 400 }
-      );
-    }
-
-    const { data, error } = await supabase
-      .from('users')
-      .select('username')
-      .eq('username', cleanUsername)
-      .single();
-
-    if (error && error.code !== 'PGRST116') {
-      return NextResponse.json({ error: error.message }, { status: 400 });
-    }
-
-    return NextResponse.json({ 
-      available: !data,
-      username: cleanUsername 
-    });
-  } catch (error) {
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: 'Internal server error', details: error instanceof Error ? error.message : 'Unknown error' },
       { status: 500 }
     );
   }

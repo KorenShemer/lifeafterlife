@@ -52,6 +52,7 @@ export interface Database {
           created_at?: string
           updated_at?: string
         }
+        Relationships: []
       }
       recipients: {
         Row: {
@@ -81,6 +82,14 @@ export interface Database {
           created_at?: string
           updated_at?: string
         }
+        Relationships: [
+          {
+            foreignKeyName: "recipients_user_id_fkey"
+            columns: ["user_id"]
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          }
+        ]
       }
       checkins: {
         Row: {
@@ -110,6 +119,14 @@ export interface Database {
           notes?: string | null
           created_at?: string
         }
+        Relationships: [
+          {
+            foreignKeyName: "checkins_user_id_fkey"
+            columns: ["user_id"]
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          }
+        ]
       }
       memories: {
         Row: {
@@ -151,6 +168,14 @@ export interface Database {
           created_at?: string
           updated_at?: string
         }
+        Relationships: [
+          {
+            foreignKeyName: "memories_user_id_fkey"
+            columns: ["user_id"]
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          }
+        ]
       }
       memory_recipients: {
         Row: {
@@ -168,6 +193,20 @@ export interface Database {
           recipient_id?: string
           sent_at?: string | null
         }
+        Relationships: [
+          {
+            foreignKeyName: "memory_recipients_memory_id_fkey"
+            columns: ["memory_id"]
+            referencedRelation: "memories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "memory_recipients_recipient_id_fkey"
+            columns: ["recipient_id"]
+            referencedRelation: "recipients"
+            referencedColumns: ["id"]
+          }
+        ]
       }
       user_settings: {
         Row: {
@@ -197,7 +236,27 @@ export interface Database {
           created_at?: string
           updated_at?: string
         }
+        Relationships: [
+          {
+            foreignKeyName: "user_settings_user_id_fkey"
+            columns: ["user_id"]
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          }
+        ]
       }
+    }
+    Views: {
+      [_ in never]: never
+    }
+    Functions: {
+      [_ in never]: never
+    }
+    Enums: {
+      [_ in never]: never
+    }
+    CompositeTypes: {
+      [_ in never]: never
     }
   }
 }
