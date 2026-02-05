@@ -5,19 +5,17 @@ import {
   CheckCircle,
   Clock,
   AlertCircle,
-  ArrowLeft,
   Mail,
   MoreVertical,
 } from "lucide-react";
 
-import { Button, Card, Badge, SearchInput } from "@/shared/components";
+import { Button, Card, Badge } from "@/shared/components";
 import { PageTransition } from "@/shared/components/PageTransition";
 
 export default function RecipientsPage() {
   const stats = {
     verified: 3,
     pending: 1,
-    expired: 1,
   };
 
   type Recipient = {
@@ -25,7 +23,7 @@ export default function RecipientsPage() {
     name: string;
     email: string;
     initials: string;
-    status: "verified" | "pending" | "expired";
+    status: "verified" | "pending";
     statusText: string;
     memoriesAssigned: number;
   };
@@ -85,13 +83,6 @@ export default function RecipientsPage() {
             Pending
           </Badge>
         );
-      case "expired":
-        return (
-          <Badge variant="warning">
-            <AlertCircle className="w-3 h-3" />
-            Expired
-          </Badge>
-        );
       default:
         return null;
     }
@@ -117,7 +108,7 @@ export default function RecipientsPage() {
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <Card className="bg-gradient-to-br from-emerald-500/10 to-emerald-600/5 border-emerald-500/20">
             <div className="flex items-center justify-between">
               <div>
@@ -146,22 +137,6 @@ export default function RecipientsPage() {
               </div>
               <div className="p-3 bg-yellow-500/20 rounded-lg">
                 <Clock className="w-8 h-8 text-yellow-500" />
-              </div>
-            </div>
-          </Card>
-
-          <Card className="bg-gradient-to-br from-red-500/10 to-red-600/5 border-red-500/20">
-            <div className="flex items-center justify-between">
-              <div>
-                <div className="text-4xl font-bold text-white mb-2">
-                  {stats.expired}
-                </div>
-                <div className="text-sm text-gray-300 font-medium">
-                  Expired
-                </div>
-              </div>
-              <div className="p-3 bg-red-500/20 rounded-lg">
-                <AlertCircle className="w-8 h-8 text-red-500" />
               </div>
             </div>
           </Card>

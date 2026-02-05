@@ -4,7 +4,7 @@ import { createClient } from '@/lib/supabase/server';
 // GET /api/recipients - Get user's recipients
 export async function GET(request: NextRequest) {
   try {
-    const supabase = createClient();
+    const supabase = await createClient();
     const { data: { user }, error: authError } = await supabase.auth.getUser();
 
     if (authError || !user) {
@@ -33,7 +33,7 @@ export async function GET(request: NextRequest) {
 // POST /api/recipients - Create a new recipient
 export async function POST(request: NextRequest) {
   try {
-    const supabase = createClient();
+    const supabase = await createClient();
     const { data: { user }, error: authError } = await supabase.auth.getUser();
 
     if (authError || !user) {
