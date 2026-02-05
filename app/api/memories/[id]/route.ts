@@ -4,10 +4,11 @@ import { createClient } from '@/lib/supabase/server';
 // GET /api/memories/[id] - Get a specific memory
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const supabase = createClient();
+    const { id } = await params;
+    const supabase = await createClient();
     const { data: { user }, error: authError } = await supabase.auth.getUser();
 
     if (authError || !user) {
@@ -27,7 +28,7 @@ export async function GET(
           )
         )
       `)
-      .eq('id', params.id)
+      .eq('id', id)
       .eq('user_id', user.id)
       .single();
 
@@ -47,10 +48,11 @@ export async function GET(
 // PUT /api/memories/[id] - Update a memory
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const supabase = createClient();
+    const { id } = await params;
+    const supabase = await createClient();
     const { data: { user }, error: authError } = await supabase.auth.getUser();
 
     if (authError || !user) {
@@ -69,7 +71,7 @@ export async function PUT(
         media_type,
         scheduled_release_date,
       })
-      .eq('id', params.id)
+      .eq('id', id)
       .eq('user_id', user.id)
       .select()
       .single();
@@ -84,12 +86,12 @@ export async function PUT(
       await supabase
         .from('memory_recipients')
         .delete()
-        .eq('memory_id', params.id);
+        .eq('memory_id', id);
 
       // Create new links
       if (recipient_ids.length > 0) {
         const memoryRecipients = recipient_ids.map((recipient_id: string) => ({
-          memory_id: params.id,
+          memory_id: id,
           recipient_id,
         }));
 
@@ -109,10 +111,11 @@ export async function PUT(
 // DELETE /api/memories/[id] - Delete a memory
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const supabase = createClient();
+    const { id } = await params;
+    const supabase = await createClient();
     const { data: { user }, error: authError } = await supabase.auth.getUser();
 
     if (authError || !user) {
@@ -122,7 +125,7 @@ export async function DELETE(
     const { error } = await supabase
       .from('memories')
       .delete()
-      .eq('id', params.id)
+      .eq('id', id)
       .eq('user_id', user.id);
 
     if (error) {
