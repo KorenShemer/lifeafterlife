@@ -31,7 +31,7 @@ export const ConditionalLayout = ({ children }: ConditionalLayoutProps) => {
 
     const fetchUser = async () => {
       try {
-        const supabase = createClient();
+        const supabase = await createClient();
 
         // Get authenticated user
         const {

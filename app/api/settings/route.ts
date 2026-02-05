@@ -4,7 +4,7 @@ import { createClient } from '@/lib/supabase/server';
 // GET /api/settings - Get user settings
 export async function GET(request: NextRequest) {
   try {
-    const supabase = createClient();
+    const supabase = await createClient();
     const { data: { user }, error: authError } = await supabase.auth.getUser();
 
     if (authError || !user) {
@@ -50,7 +50,7 @@ export async function GET(request: NextRequest) {
 // PUT /api/settings - Update user settings
 export async function PUT(request: NextRequest) {
   try {
-    const supabase = createClient();
+    const supabase = await createClient();
     const { data: { user }, error: authError } = await supabase.auth.getUser();
 
     if (authError || !user) {
