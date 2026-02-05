@@ -7,7 +7,6 @@ import {
   AlertTriangle,
   AlertCircle,
   Heart,
-  Send,
 } from "lucide-react";
 import { Card, Button, Badge } from "../../shared/components";
 import { PageTransition } from "@/shared/components/PageTransition";
@@ -77,10 +76,10 @@ export default function ProofOfLifePage() {
                   className="w-full mb-2 flex items-center justify-center gap-2"
                 >
                   <CheckCircle className="w-4 h-4" />
-                  Simulate Check-in
+                  Check-in Now
                 </Button>
                 <p className="text-xs text-gray-500 text-center">
-                  This resets the 30-day timer to Day 0
+                  This resets the timer to Day 0
                 </p>
               </div>
             </div>
@@ -141,7 +140,7 @@ export default function ProofOfLifePage() {
                 </div>
 
                 <p className="text-xs text-gray-500">
-                  First WhatsApp verification on{" "}
+                  First verification on{" "}
                   <span className="text-emerald-400 font-medium">
                     Day {routineCheckIn}
                   </span>
@@ -333,7 +332,7 @@ export default function ProofOfLifePage() {
                   First Warning
                 </h3>
                 <p className="text-sm text-gray-400">
-                  Warning notification via WhatsApp.
+                  Warning notification sent.
                 </p>
               </div>
             </li>
@@ -372,39 +371,11 @@ export default function ProofOfLifePage() {
                   Legacy Release
                 </h3>
                 <p className="text-sm text-gray-400">
-                  Legacy released to contacts.
+                  Memories released to contacts.
                 </p>
               </div>
             </li>
           </ol>
-        </Card>
-
-        {/* Verification Method */}
-        <Card>
-          <div className="flex items-center gap-2 mb-4">
-            <Send className="w-5 h-5 text-emerald-400" />
-            <h3 className="text-base font-bold text-white">
-              Verification Method
-            </h3>
-          </div>
-
-          <div className="flex items-center justify-between p-4 bg-gray-800/30 rounded-lg border border-gray-700/50">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-emerald-500/20 rounded-lg flex items-center justify-center">
-                <Send className="w-5 h-5 text-emerald-400" />
-              </div>
-              <div>
-                <p className="text-white font-medium text-sm">WhatsApp</p>
-                <p className="text-xs text-gray-500">
-                  Primary verification channel
-                </p>
-              </div>
-            </div>
-            <Button variant="secondary" size="sm">
-              <Send className="w-4 h-4" />
-              Test
-            </Button>
-          </div>
         </Card>
 
         {/* Save Buttons */}

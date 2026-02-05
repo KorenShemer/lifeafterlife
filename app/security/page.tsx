@@ -11,7 +11,6 @@ import {
   Eye,
   EyeOff,
   LogOut,
-
 } from "lucide-react";
 import { Card, Button, Badge } from "../../shared/components";
 import { PageTransition } from "@/shared/components/PageTransition";
@@ -63,7 +62,6 @@ export default function SecurityPage() {
         {/* Header */}
         <div className="space-y-2">
           <div className="flex items-center gap-3">
-
             <div>
               <div className="flex items-center gap-2">
                 <Shield className="w-6 h-6 text-emerald-400" />
@@ -368,33 +366,6 @@ export default function SecurityPage() {
             </div>
           </Card>
         </div>
-
-        {/* End-to-End Encryption */}
-        <Card className="bg-gradient-to-r from-emerald-500/10 to-emerald-600/10 border-emerald-500/30">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-emerald-500/20 rounded-xl flex items-center justify-center">
-                <Shield className="w-6 h-6 text-emerald-400" />
-              </div>
-              <div>
-                <h3 className="text-lg font-bold text-white mb-1">
-                  End-to-End Encryption Active
-                </h3>
-                <p className="text-sm text-gray-400">
-                  All your memories are encrypted with AES-256. Only you and
-                  your designated recipients can access them.
-                </p>
-              </div>
-            </div>
-            <Badge
-              variant="default"
-              className="bg-emerald-500/20 text-emerald-400 border-emerald-500/30 px-3 py-1.5"
-            >
-              <Lock className="w-3 h-3 mr-1" />
-              AES-256
-            </Badge>
-          </div>
-        </Card>
       </div>
     </PageTransition>
   );
