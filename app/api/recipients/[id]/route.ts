@@ -1,13 +1,48 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 
+// GET /api/recipients/[id] - Get a specific recipient
+export async function GET(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const { id } = await params;
+    const supabase = await createClient();
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+
+    if (authError || !user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const { data, error } = await supabase
+      .from('recipients')
+      .select('*')
+      .eq('id', id)
+      .eq('user_id', user.id)
+      .single();
+
+    if (error) {
+      return NextResponse.json({ error: 'Recipient not found' }, { status: 404 });
+    }
+
+    return NextResponse.json({ recipient: data });
+  } catch (error) {
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    );
+  }
+}
+
 // PUT /api/recipients/[id] - Update a recipient
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const supabase = createClient();
+    const { id } = await params;
+    const supabase = await createClient();
     const { data: { user }, error: authError } = await supabase.auth.getUser();
 
     if (authError || !user) {
@@ -18,8 +53,12 @@ export async function PUT(
 
     const { data, error } = await supabase
       .from('recipients')
-      .update({ name, email, phone })
-      .eq('id', params.id)
+      .update({
+        name,
+        email,
+        phone,
+      })
+      .eq('id', id)
       .eq('user_id', user.id)
       .select()
       .single();
@@ -40,10 +79,11 @@ export async function PUT(
 // DELETE /api/recipients/[id] - Delete a recipient
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const supabase = createClient();
+    const { id } = await params;
+    const supabase = await createClient();
     const { data: { user }, error: authError } = await supabase.auth.getUser();
 
     if (authError || !user) {
@@ -53,7 +93,7 @@ export async function DELETE(
     const { error } = await supabase
       .from('recipients')
       .delete()
-      .eq('id', params.id)
+      .eq('id', id)
       .eq('user_id', user.id);
 
     if (error) {
