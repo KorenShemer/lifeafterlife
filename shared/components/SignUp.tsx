@@ -115,7 +115,7 @@ export default function Signup() {
       // Step 3: Create account + complete profile
       console.log("🔵 Creating account...");
 
-      const supabase = createClient();
+      const supabase = await createClient();
 
       // 1. Sign up
       const { data: signupData, error: signupError } =
