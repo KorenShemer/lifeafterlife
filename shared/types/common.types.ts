@@ -4,6 +4,7 @@ export interface User {
   name: string
   createdAt: string
   lastCheckIn?: string
+  subscriptionPlan: string
   checkInFrequency: number // days
 }
 
@@ -17,7 +18,7 @@ export interface Memory {
   content?: string // For text-based memories
   fileSize?: number
   mimeType?: string
-  metadata?: Record<string, any>
+  metadata?: Record<string, unknown>
   createdAt: string
   updatedAt: string
 }

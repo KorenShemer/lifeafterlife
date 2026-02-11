@@ -7,7 +7,7 @@ export async function PUT(
   { params }: { params: { id: string } }
 ) {
   try {
-    const supabase = createClient();
+    const supabase = await createClient(); // ← was missing await
     const { data: { user }, error: authError } = await supabase.auth.getUser();
 
     if (authError || !user) {
@@ -18,7 +18,7 @@ export async function PUT(
 
     const { data, error } = await supabase
       .from('recipients')
-      .update({ name, email, phone })
+      .update({ name, email, phone, updated_at: new Date().toISOString() })
       .eq('id', params.id)
       .eq('user_id', user.id)
       .select()
@@ -43,7 +43,7 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   try {
-    const supabase = createClient();
+    const supabase = await createClient(); // ← was missing await
     const { data: { user }, error: authError } = await supabase.auth.getUser();
 
     if (authError || !user) {

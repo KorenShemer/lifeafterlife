@@ -20,6 +20,7 @@ export interface Database {
           bio: string | null
           avatar_url: string | null
           profile_completed: boolean
+          subscription_plan: string
           onboarding_completed_at: string | null
           created_at: string
           updated_at: string

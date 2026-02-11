@@ -4,7 +4,6 @@ import {
   Plus,
   CheckCircle,
   Clock,
-  AlertCircle,
   Mail,
   MoreVertical,
 } from "lucide-react";
@@ -12,62 +11,35 @@ import {
 import { Button, Card, Badge } from "@/shared/components";
 import { PageTransition } from "@/shared/components/PageTransition";
 
-export default function RecipientsPage() {
+export type RecipientStatus = "verified" | "pending";
+
+export type Recipient = {
+  id: number;
+  name: string;
+  email: string;
+  initials: string;
+  status: RecipientStatus;
+  statusText: string;
+  memoriesAssigned: number;
+};
+
+type RecipientsPageProps = {
+  recipients?: Recipient[];
+  onAddRecipient?: () => void;
+  onRecipientMenuClick?: (recipientId: number) => void;
+};
+
+export default function RecipientsPage({
+  recipients = [],
+  onAddRecipient,
+  onRecipientMenuClick,
+}: RecipientsPageProps) {
   const stats = {
-    verified: 3,
-    pending: 1,
+    verified: recipients.filter((r) => r.status === "verified").length,
+    pending: recipients.filter((r) => r.status === "pending").length,
   };
 
-  type Recipient = {
-    id: number;
-    name: string;
-    email: string;
-    initials: string;
-    status: "verified" | "pending";
-    statusText: string;
-    memoriesAssigned: number;
-  };
-
-  const recipients: Recipient[] = [
-    {
-      id: 1,
-      name: "Emma Johnson",
-      email: "emma.j@email.com",
-      initials: "EJ",
-      status: "verified",
-      statusText: "This recipient is verified and will receive memories.",
-      memoriesAssigned: 4,
-    },
-    {
-      id: 2,
-      name: "James Johnson",
-      email: "james.j@email.com",
-      initials: "JJ",
-      status: "verified",
-      statusText: "This recipient is verified and will receive memories.",
-      memoriesAssigned: 5,
-    },
-    {
-      id: 3,
-      name: "Michael Chen",
-      email: "m.chen@email.com",
-      initials: "MC",
-      status: "pending",
-      statusText: "Waiting for email verification.",
-      memoriesAssigned: 1,
-    },
-    {
-      id: 4,
-      name: "Sarah Williams",
-      email: "sarah.w@email.com",
-      initials: "SW",
-      status: "verified",
-      statusText: "This recipient is verified and will receive memories.",
-      memoriesAssigned: 2,
-    },
-  ];
-
-  const getStatusBadge = (status: string) => {
+  const getStatusBadge = (status: RecipientStatus) => {
     switch (status) {
       case "verified":
         return (
@@ -101,7 +73,7 @@ export default function RecipientsPage() {
               Manage who will receive your memories
             </p>
           </div>
-          <Button variant="primary" size="lg">
+          <Button variant="primary" size="lg" onClick={onAddRecipient}>
             <Plus className="w-5 h-5" />
             Add Recipient
           </Button>
@@ -144,52 +116,59 @@ export default function RecipientsPage() {
 
         {/* Recipients List */}
         <Card>
-          <h3 className="text-xl font-bold text-white mb-6">
-            All Recipients
-          </h3>
+          <h3 className="text-xl font-bold text-white mb-6">All Recipients</h3>
 
-          <div className="space-y-3">
-            {recipients.map((recipient) => (
-              <div
-                key={recipient.id}
-                className="flex items-center justify-between p-4 bg-[#0a0e1a] rounded-lg border border-gray-800 hover:border-gray-700 transition"
-              >
-                <div className="flex items-center gap-4 flex-1">
-                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-emerald-500 to-cyan-500 flex items-center justify-center text-white font-semibold text-lg">
-                    {recipient.initials}
+          {recipients.length === 0 ? (
+            <p className="text-gray-400 text-sm text-center py-8">
+              No recipients yet. Add one to get started.
+            </p>
+          ) : (
+            <div className="space-y-3">
+              {recipients.map((recipient) => (
+                <div
+                  key={recipient.id}
+                  className="flex items-center justify-between p-4 bg-[#0a0e1a] rounded-lg border border-gray-800 hover:border-gray-700 transition"
+                >
+                  <div className="flex items-center gap-4 flex-1">
+                    <div className="w-12 h-12 rounded-full bg-gradient-to-br from-emerald-500 to-cyan-500 flex items-center justify-center text-white font-semibold text-lg">
+                      {recipient.initials}
+                    </div>
+
+                    <div className="flex-1">
+                      <div className="flex items-center gap-3 mb-1">
+                        <h4 className="text-white font-semibold">
+                          {recipient.name}
+                        </h4>
+                        {getStatusBadge(recipient.status)}
+                      </div>
+                      <div className="flex items-center gap-2 text-sm text-gray-400">
+                        <Mail className="w-4 h-4" />
+                        <span>{recipient.email}</span>
+                      </div>
+                      <p className="text-xs text-gray-500 mt-1">
+                        {recipient.statusText}
+                      </p>
+                    </div>
                   </div>
 
-                  <div className="flex-1">
-                    <div className="flex items-center gap-3 mb-1">
-                      <h4 className="text-white font-semibold">
-                        {recipient.name}
-                      </h4>
-                      {getStatusBadge(recipient.status)}
+                  <div className="flex items-center gap-6">
+                    <div className="text-right">
+                      <div className="text-sm text-gray-400">
+                        {recipient.memoriesAssigned} memories assigned
+                      </div>
                     </div>
-                    <div className="flex items-center gap-2 text-sm text-gray-400">
-                      <Mail className="w-4 h-4" />
-                      <span>{recipient.email}</span>
-                    </div>
-                    <p className="text-xs text-gray-500 mt-1">
-                      {recipient.statusText}
-                    </p>
+
+                    <button
+                      className="p-2 hover:bg-gray-800 rounded-lg transition text-gray-400 hover:text-white"
+                      onClick={() => onRecipientMenuClick?.(recipient.id)}
+                    >
+                      <MoreVertical className="w-5 h-5" />
+                    </button>
                   </div>
                 </div>
-
-                <div className="flex items-center gap-6">
-                  <div className="text-right">
-                    <div className="text-sm text-gray-400">
-                      {recipient.memoriesAssigned} memories assigned
-                    </div>
-                  </div>
-
-                  <button className="p-2 hover:bg-gray-800 rounded-lg transition text-gray-400 hover:text-white">
-                    <MoreVertical className="w-5 h-5" />
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </Card>
       </div>
     </PageTransition>
