@@ -65,6 +65,7 @@ export async function PUT(request: NextRequest) {
       date_of_birth, 
       bio, 
       avatar_url,
+      subscription_plan,
       profile_completed 
     } = body;
 
@@ -92,7 +93,7 @@ export async function PUT(request: NextRequest) {
       console.log('✅ Username available');
     }
 
-    const updates: any = {
+    const updates: Record<string, unknown> = {
       updated_at: new Date().toISOString(),
     };
 
@@ -100,6 +101,7 @@ export async function PUT(request: NextRequest) {
     if (full_name !== undefined) updates.full_name = full_name;
     if (phone !== undefined) updates.phone = phone;
     if (date_of_birth !== undefined) updates.date_of_birth = date_of_birth;
+    if (subscription_plan !== undefined) updates.subscription_plan = subscription_plan;
     if (bio !== undefined) updates.bio = bio;
     if (avatar_url !== undefined) updates.avatar_url = avatar_url;
     if (profile_completed !== undefined) {

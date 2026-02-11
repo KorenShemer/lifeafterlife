@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Shield,
   Smartphone,
@@ -15,68 +15,193 @@ import {
 import { Card, Button, Badge } from "../../shared/components";
 import { PageTransition } from "@/shared/components/PageTransition";
 
+interface SecuritySettings {
+  two_factor_enabled: boolean;
+  biometric_enabled: boolean;
+  login_alerts: boolean;
+  verification_reminders: boolean;
+  security_alerts: boolean;
+}
+
+interface Session {
+  id: string;
+  device_name: string;
+  device_type: string;
+  location: string;
+  last_active: string;
+  is_current: boolean;
+}
+
 export default function SecurityPage() {
-  // Two-Factor Authentication toggles
-  const [authenticatorEnabled, setAuthenticatorEnabled] = useState(true);
-  const [biometricEnabled, setBiometricEnabled] = useState(false);
+  const [settings, setSettings] = useState<SecuritySettings>({
+    two_factor_enabled: false,
+    biometric_enabled: false,
+    login_alerts: true,
+    verification_reminders: true,
+    security_alerts: true,
+  });
 
-  // Security Notifications toggles
-  const [loginAlerts, setLoginAlerts] = useState(true);
-  const [verificationReminders, setVerificationReminders] = useState(true);
-  const [securityAlerts, setSecurityAlerts] = useState(true);
-
-  // Password visibility
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
-
-  // Password inputs
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
+  const [passwordError, setPasswordError] = useState("");
+  const [passwordSuccess, setPasswordSuccess] = useState(false);
 
-  // Active sessions
-  const sessions = [
-    {
-      device: "MacBook Pro",
-      location: "San Francisco, CA",
-      status: "Current",
-      time: "Now",
-      icon: Monitor,
-    },
-    {
-      device: "iPhone 15 Pro",
-      location: "San Francisco, CA",
-      time: "2 hours ago",
-      icon: Smartphone,
-    },
-    {
-      device: "Windows Desktop",
-      location: "New York, NY",
-      time: "3 days ago",
-      icon: Monitor,
-    },
-  ];
+  const [sessions, setSessions] = useState<Session[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    loadSecurityData();
+  }, []);
+
+  const loadSecurityData = async () => {
+    try {
+      // Load settings
+      const settingsRes = await fetch("/api/security/settings");
+      if (settingsRes.ok) {
+        const settingsData = await settingsRes.json();
+        setSettings(settingsData);
+      }
+
+      // Load sessions
+      const sessionsRes = await fetch("/api/security/sessions");
+      if (sessionsRes.ok) {
+        const sessionsData = await sessionsRes.json();
+        setSessions(sessionsData);
+      }
+    } catch (error) {
+      console.error("Error loading security data:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const updateSetting = async (key: keyof SecuritySettings, value: boolean) => {
+    try {
+      const updatedSettings = { ...settings, [key]: value };
+      
+      const res = await fetch("/api/security/settings", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(updatedSettings),
+      });
+
+      if (res.ok) {
+        setSettings(updatedSettings);
+      }
+    } catch (error) {
+      console.error("Error updating setting:", error);
+    }
+  };
+
+  const handlePasswordChange = async () => {
+    setPasswordError("");
+    setPasswordSuccess(false);
+
+    if (!newPassword) {
+      setPasswordError("New password is required");
+      return;
+    }
+
+    if (newPassword.length < 8) {
+      setPasswordError("Password must be at least 8 characters");
+      return;
+    }
+
+    try {
+      const res = await fetch("/api/security/password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ newPassword }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        setPasswordError(data.error || "Failed to update password");
+        return;
+      }
+
+      setPasswordSuccess(true);
+      setCurrentPassword("");
+      setNewPassword("");
+    } catch (error) {
+      setPasswordError("Failed to update password");
+    }
+  };
+
+  const signOutSession = async (sessionId: string) => {
+    try {
+      const res = await fetch(`/api/security/sessions?sessionId=${sessionId}`, {
+        method: "DELETE",
+      });
+
+      if (res.ok) {
+        setSessions(prev => prev.filter(s => s.id !== sessionId));
+      }
+    } catch (error) {
+      console.error("Error signing out session:", error);
+    }
+  };
+
+  const signOutAllSessions = async () => {
+    try {
+      const res = await fetch("/api/security/sessions?all=true", {
+        method: "DELETE",
+      });
+
+      if (res.ok) {
+        await loadSecurityData();
+      }
+    } catch (error) {
+      console.error("Error signing out all sessions:", error);
+    }
+  };
+
+  const getSessionIcon = (deviceType: string) => {
+    return deviceType === "mobile" ? Smartphone : Monitor;
+  };
+
+  const formatLastActive = (timestamp: string) => {
+    const date = new Date(timestamp);
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMs / 3600000);
+    const diffDays = Math.floor(diffMs / 86400000);
+
+    if (diffMins < 1) return "Now";
+    if (diffMins < 60) return `${diffMins} minutes ago`;
+    if (diffHours < 24) return `${diffHours} hours ago`;
+    return `${diffDays} days ago`;
+  };
+
+  if (loading) {
+    return (
+      <PageTransition>
+        <div className="p-5 flex items-center justify-center">
+          <div className="text-gray-400">Loading security settings...</div>
+        </div>
+      </PageTransition>
+    );
+  }
 
   return (
     <PageTransition>
       <div className="p-5 space-y-6">
-        {/* Header */}
         <div className="space-y-2">
-          <div className="flex items-center gap-3">
-            <div>
-              <div className="flex items-center gap-2">
-                <Shield className="w-6 h-6 text-emerald-400" />
-                <h1 className="text-2xl font-bold text-white">
-                  Security Settings
-                </h1>
-              </div>
-              <p className="text-sm text-gray-400">
-                Protect your account and memories
-              </p>
-            </div>
+          <div className="flex items-center gap-2">
+            <Shield className="w-6 h-6 text-emerald-400" />
+            <h1 className="text-2xl font-bold text-white">
+              Security Settings
+            </h1>
           </div>
+          <p className="text-sm text-gray-400">
+            Protect your account and memories
+          </p>
         </div>
 
-        {/* Main Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           {/* Two-Factor Authentication */}
           <Card>
@@ -88,7 +213,6 @@ export default function SecurityPage() {
             </div>
 
             <div className="space-y-4">
-              {/* Authenticator App */}
               <div className="flex items-center justify-between p-4 bg-gray-800/50 rounded-lg border border-gray-700/50 hover:border-gray-600/50 transition-colors">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 bg-emerald-500/20 rounded-lg flex items-center justify-center">
@@ -104,20 +228,19 @@ export default function SecurityPage() {
                   </div>
                 </div>
                 <button
-                  onClick={() => setAuthenticatorEnabled(!authenticatorEnabled)}
+                  onClick={() => updateSetting("two_factor_enabled", !settings.two_factor_enabled)}
                   className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                    authenticatorEnabled ? "bg-emerald-500" : "bg-gray-600"
+                    settings.two_factor_enabled ? "bg-emerald-500" : "bg-gray-600"
                   }`}
                 >
                   <span
                     className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                      authenticatorEnabled ? "translate-x-6" : "translate-x-1"
+                      settings.two_factor_enabled ? "translate-x-6" : "translate-x-1"
                     }`}
                   />
                 </button>
               </div>
 
-              {/* Biometric Login */}
               <div className="flex items-center justify-between p-4 bg-gray-800/50 rounded-lg border border-gray-700/50 hover:border-gray-600/50 transition-colors">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 bg-gray-700/50 rounded-lg flex items-center justify-center">
@@ -133,21 +256,20 @@ export default function SecurityPage() {
                   </div>
                 </div>
                 <button
-                  onClick={() => setBiometricEnabled(!biometricEnabled)}
+                  onClick={() => updateSetting("biometric_enabled", !settings.biometric_enabled)}
                   className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                    biometricEnabled ? "bg-emerald-500" : "bg-gray-600"
+                    settings.biometric_enabled ? "bg-emerald-500" : "bg-gray-600"
                   }`}
                 >
                   <span
                     className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                      biometricEnabled ? "translate-x-6" : "translate-x-1"
+                      settings.biometric_enabled ? "translate-x-6" : "translate-x-1"
                     }`}
                   />
                 </button>
               </div>
 
-              {/* Status Badge */}
-              {authenticatorEnabled && (
+              {settings.two_factor_enabled && (
                 <div className="flex items-center gap-2 px-3 py-2 bg-emerald-500/10 border border-emerald-500/30 rounded-lg">
                   <Shield className="w-4 h-4 text-emerald-400" />
                   <span className="text-xs text-emerald-400 font-medium">
@@ -168,7 +290,6 @@ export default function SecurityPage() {
             </div>
 
             <div className="space-y-4">
-              {/* Login Alerts */}
               <div className="flex items-center justify-between p-4 bg-gray-800/50 rounded-lg border border-gray-700/50">
                 <div>
                   <p className="text-white font-medium text-sm">Login Alerts</p>
@@ -177,20 +298,19 @@ export default function SecurityPage() {
                   </p>
                 </div>
                 <button
-                  onClick={() => setLoginAlerts(!loginAlerts)}
+                  onClick={() => updateSetting("login_alerts", !settings.login_alerts)}
                   className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                    loginAlerts ? "bg-emerald-500" : "bg-gray-600"
+                    settings.login_alerts ? "bg-emerald-500" : "bg-gray-600"
                   }`}
                 >
                   <span
                     className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                      loginAlerts ? "translate-x-6" : "translate-x-1"
+                      settings.login_alerts ? "translate-x-6" : "translate-x-1"
                     }`}
                   />
                 </button>
               </div>
 
-              {/* Verification Reminders */}
               <div className="flex items-center justify-between p-4 bg-gray-800/50 rounded-lg border border-gray-700/50">
                 <div>
                   <p className="text-white font-medium text-sm">
@@ -201,22 +321,19 @@ export default function SecurityPage() {
                   </p>
                 </div>
                 <button
-                  onClick={() =>
-                    setVerificationReminders(!verificationReminders)
-                  }
+                  onClick={() => updateSetting("verification_reminders", !settings.verification_reminders)}
                   className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                    verificationReminders ? "bg-emerald-500" : "bg-gray-600"
+                    settings.verification_reminders ? "bg-emerald-500" : "bg-gray-600"
                   }`}
                 >
                   <span
                     className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                      verificationReminders ? "translate-x-6" : "translate-x-1"
+                      settings.verification_reminders ? "translate-x-6" : "translate-x-1"
                     }`}
                   />
                 </button>
               </div>
 
-              {/* Security Alerts */}
               <div className="flex items-center justify-between p-4 bg-gray-800/50 rounded-lg border border-gray-700/50">
                 <div>
                   <p className="text-white font-medium text-sm">
@@ -227,14 +344,14 @@ export default function SecurityPage() {
                   </p>
                 </div>
                 <button
-                  onClick={() => setSecurityAlerts(!securityAlerts)}
+                  onClick={() => updateSetting("security_alerts", !settings.security_alerts)}
                   className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                    securityAlerts ? "bg-emerald-500" : "bg-gray-600"
+                    settings.security_alerts ? "bg-emerald-500" : "bg-gray-600"
                   }`}
                 >
                   <span
                     className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                      securityAlerts ? "translate-x-6" : "translate-x-1"
+                      settings.security_alerts ? "translate-x-6" : "translate-x-1"
                     }`}
                   />
                 </button>
@@ -250,7 +367,6 @@ export default function SecurityPage() {
             </div>
 
             <div className="space-y-4">
-              {/* Current Password */}
               <div className="space-y-2">
                 <label className="text-sm text-white font-medium">
                   Current Password
@@ -276,7 +392,6 @@ export default function SecurityPage() {
                 </div>
               </div>
 
-              {/* New Password */}
               <div className="space-y-2">
                 <label className="text-sm text-white font-medium">
                   New Password
@@ -302,8 +417,19 @@ export default function SecurityPage() {
                 </div>
               </div>
 
-              {/* Update Button */}
-              <Button variant="primary" className="w-full">
+              {passwordError && (
+                <p className="text-xs text-red-400">{passwordError}</p>
+              )}
+
+              {passwordSuccess && (
+                <p className="text-xs text-emerald-400">Password updated successfully!</p>
+              )}
+
+              <Button 
+                variant="primary" 
+                className="w-full"
+                onClick={handlePasswordChange}
+              >
                 Update Password
               </Button>
             </div>
@@ -318,51 +444,61 @@ export default function SecurityPage() {
                   Active Sessions
                 </h3>
               </div>
-              <button className="text-red-400 hover:text-red-300 text-sm font-medium flex items-center gap-1 transition-colors">
+              <button 
+                onClick={signOutAllSessions}
+                className="text-red-400 hover:text-red-300 text-sm font-medium flex items-center gap-1 transition-colors"
+              >
                 <LogOut className="w-4 h-4" />
                 Sign out all
               </button>
             </div>
 
             <div className="space-y-3">
-              {sessions.map((session, index) => {
-                const Icon = session.icon;
-                return (
-                  <div
-                    key={index}
-                    className="flex items-center justify-between p-4 bg-gray-800/50 rounded-lg border border-gray-700/50 hover:border-gray-600/50 transition-colors"
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 bg-gray-700/50 rounded-lg flex items-center justify-center">
-                        <Icon className="w-5 h-5 text-gray-400" />
-                      </div>
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <p className="text-white font-medium text-sm">
-                            {session.device}
-                          </p>
-                          {session.status && (
-                            <Badge
-                              variant="success"
-                              className="text-[10px] px-2 py-0.5"
-                            >
-                              {session.status}
-                            </Badge>
-                          )}
+              {sessions.length === 0 ? (
+                <p className="text-sm text-gray-400 text-center py-4">No active sessions</p>
+              ) : (
+                sessions.map((session) => {
+                  const Icon = getSessionIcon(session.device_type);
+                  return (
+                    <div
+                      key={session.id}
+                      className="flex items-center justify-between p-4 bg-gray-800/50 rounded-lg border border-gray-700/50 hover:border-gray-600/50 transition-colors"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 bg-gray-700/50 rounded-lg flex items-center justify-center">
+                          <Icon className="w-5 h-5 text-gray-400" />
                         </div>
-                        <p className="text-xs text-gray-400">
-                          {session.location} · {session.time}
-                        </p>
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <p className="text-white font-medium text-sm">
+                              {session.device_name}
+                            </p>
+                            {session.is_current && (
+                              <Badge
+                                variant="success"
+                                className="text-[10px] px-2 py-0.5"
+                              >
+                                Current
+                              </Badge>
+                            )}
+                          </div>
+                          <p className="text-xs text-gray-400">
+                            {session.location} · {formatLastActive(session.last_active)}
+                          </p>
+                        </div>
                       </div>
+                      {!session.is_current && (
+                        <button 
+                          onClick={() => signOutSession(session.id)}
+                          className="text-red-400 hover:text-red-300 transition-colors"
+                        >
+                          <LogOut className="w-4 h-4" />
+                        </button>
+                      )}
                     </div>
-                    {!session.status && (
-                      <button className="text-red-400 hover:text-red-300 transition-colors">
-                        <LogOut className="w-4 h-4" />
-                      </button>
-                    )}
-                  </div>
-                );
-              })}
+                  );
+                })
+              )}
             </div>
           </Card>
         </div>
