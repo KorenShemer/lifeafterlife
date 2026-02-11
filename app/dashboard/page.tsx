@@ -25,6 +25,7 @@ import {
 import { PageTransition } from "@/shared/components/PageTransition";
 import { createClient } from "@/lib/supabase/client";
 import type { Database } from "@/lib/types/database.types";
+import { User } from "@supabase/supabase-js";
 
 type DbMemory = Database['public']['Tables']['memories']['Row'];
 type DbRecipient = Database['public']['Tables']['recipients']['Row'];
@@ -54,7 +55,7 @@ type Recipient = {
 export default function DashboardPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<User | null>(null);
   const [memories, setMemories] = useState<DbMemory[]>([]);
   const [recipients, setRecipients] = useState<DbRecipient[]>([]);
   const [lastCheckIn, setLastCheckIn] = useState<CheckIn | null>(null);

@@ -17,7 +17,14 @@ export const ConditionalLayout = ({ children }: ConditionalLayoutProps) => {
   const pathname = usePathname();
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
-  const [lastCheckIn, setLastCheckIn] = useState<any>(null);
+  type CheckIn = {
+    id: string;
+    user_id: string;
+    checked_in_at: string;
+    // Add other fields as needed based on your checkins table
+  };
+
+  const [lastCheckIn, setLastCheckIn] = useState<CheckIn | null>(null);
 
   // Pages that should NOT have the sidebar/header
   const publicPages = ["/", "/login", "/signup", "/forgot-password"];
@@ -120,6 +127,7 @@ export const ConditionalLayout = ({ children }: ConditionalLayoutProps) => {
     avatar:
       user.avatar_url ||
       `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.username || user.email}`,
+    subscription_plan: user.subscription_plan + " Plan",
   };
 
   // Otherwise, render with sidebar and header

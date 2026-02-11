@@ -27,7 +27,7 @@ export const Sidebar: React.FC<SidebarProps> = ({}) => {
     { id: "recipients", label: "Recipients", icon: Users, href: "/recipients" },
     {
       id: "proof-of-life",
-      label: "Proof of Life Settings",
+      label: "Proof of Life",
       icon: HeartPulse,
       href: "/proof-of-life",
       hasNotification: true,
@@ -66,7 +66,7 @@ export const Sidebar: React.FC<SidebarProps> = ({}) => {
             <Link
               key={item.id}
               href={item.href}
-              className={`flex items-center gap-3 px-4 py-3 rounded-lg transition ${
+              className={`flex items-center text-sm gap-3 px-4 py-3 rounded-lg transition ${
                 isActive
                   ? "text-emerald-400 bg-emerald-400/10"
                   : "text-gray-400 hover:text-white hover:bg-gray-800/50"
@@ -89,7 +89,7 @@ export const Sidebar: React.FC<SidebarProps> = ({}) => {
           className="flex items-center gap-3 px-4 py-3 text-gray-400 hover:text-white hover:bg-gray-800/50 rounded-lg transition"
         >
           <Settings className="w-5 h-5" />
-          <span className="font-medium">Account Settings</span>
+          <span className="font-medium text-sm">Account Settings</span>
         </Link>
       </div>
     </aside>

@@ -1,6 +1,5 @@
 // shared/components/Header.tsx
 "use client";
-;
 import { Avatar } from "./Avatar";
 
 interface HeaderProps {
@@ -8,6 +7,7 @@ interface HeaderProps {
     name: string;
     email: string;
     avatar?: string;
+    subscription_plan: string;
   };
   lastVerified: string;
 }
@@ -29,10 +29,10 @@ export const Header = ({ user, lastVerified }: HeaderProps) => {
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-2 pl-3 border-l border-gray-700">
             <div className="text-right">
-              <div className="text-sm font-medium text-white">
-                {user.name}
+              <div className="text-sm font-medium text-white">{user.name}</div>
+              <div className="text-xs text-gray-400">
+                {user.subscription_plan}
               </div>
-              <div className="text-xs text-gray-400">Premium</div>
             </div>
             <Avatar src={user.avatar} alt={user.name} />
           </div>

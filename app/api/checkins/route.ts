@@ -31,7 +31,7 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// POST /api/checkins - Create a new check-in
+// POST /api/checkins - Create a new check-in and reset last_verified
 export async function POST(request: NextRequest) {
   try {
     const supabase = await createClient();
@@ -41,8 +41,12 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { method = 'manual', notes } = await request.json();
+    const body = await request.json().catch(() => ({}));
+    const { method = 'manual', notes } = body;
 
+    const now = new Date().toISOString();
+
+    // Insert checkin row
     const { data, error } = await supabase
       .from('checkins')
       .insert({
@@ -50,12 +54,27 @@ export async function POST(request: NextRequest) {
         method,
         status: 'completed',
         notes,
+        checked_in_at: now,
       })
       .select()
       .single();
 
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 400 });
+    }
+
+    // Update last_verified so the countdown resets
+    const { error: settingsError } = await supabase
+      .from('user_settings')
+      .update({
+        last_verified: now,
+        updated_at: now,
+      })
+      .eq('user_id', user.id);
+
+    if (settingsError) {
+      // Non-fatal: checkin was saved, just log the settings update failure
+      console.error('Failed to update last_verified:', settingsError.message);
     }
 
     return NextResponse.json({ checkin: data }, { status: 201 });
