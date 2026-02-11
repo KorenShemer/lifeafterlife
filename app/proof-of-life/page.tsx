@@ -492,7 +492,7 @@ export default function ProofOfLifePage() {
               </div>
               <div className="mt-3 sm:pe-8">
                 <time className="bg-gray-800 border border-gray-700 text-gray-300 text-xs font-medium px-1.5 py-0.5 rounded">
-                  Day 0
+                  Day {nextVerificationIn}
                 </time>
                 <h3 className="text-sm font-semibold text-white my-2">
                   Routine Check-in

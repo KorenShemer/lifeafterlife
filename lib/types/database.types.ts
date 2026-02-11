@@ -246,6 +246,120 @@ export interface Database {
           }
         ]
       }
+      security_settings: {
+        Row: {
+          user_id: string
+          two_factor_enabled: boolean
+          two_factor_method: string | null
+          biometric_enabled: boolean
+          login_alerts: boolean
+          verification_reminders: boolean
+          security_alerts: boolean
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          user_id: string
+          two_factor_enabled?: boolean
+          two_factor_method?: string | null
+          biometric_enabled?: boolean
+          login_alerts?: boolean
+          verification_reminders?: boolean
+          security_alerts?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          user_id?: string
+          two_factor_enabled?: boolean
+          two_factor_method?: string | null
+          biometric_enabled?: boolean
+          login_alerts?: boolean
+          verification_reminders?: boolean
+          security_alerts?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "security_settings_user_id_fkey"
+            columns: ["user_id"]
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
+      user_sessions: {
+        Row: {
+          id: string
+          user_id: string
+          device_name: string
+          device_type: string | null
+          location: string | null
+          ip_address: string | null
+          user_agent: string | null
+          is_current: boolean
+          last_active: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          device_name: string
+          device_type?: string | null
+          location?: string | null
+          ip_address?: string | null
+          user_agent?: string | null
+          is_current?: boolean
+          last_active?: string
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          device_name?: string
+          device_type?: string | null
+          location?: string | null
+          ip_address?: string | null
+          user_agent?: string | null
+          is_current?: boolean
+          last_active?: string
+          created_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_sessions_user_id_fkey"
+            columns: ["user_id"]
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
+      password_history: {
+        Row: {
+          id: string
+          user_id: string
+          changed_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          changed_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          changed_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "password_history_user_id_fkey"
+            columns: ["user_id"]
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
     }
     Views: {
       [_ in never]: never
