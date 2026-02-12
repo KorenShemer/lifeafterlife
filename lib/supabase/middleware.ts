@@ -3,38 +3,49 @@ import { NextResponse, type NextRequest } from 'next/server';
 import type { Database } from '@/lib/types/database.types';
 
 export async function updateSession(request: NextRequest) {
-  let supabaseResponse = NextResponse.next({
-    request,
-  });
-
-  const supabase = createServerClient<Database>(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        getAll() {
-          return request.cookies.getAll();
-        },
-        setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value }) => {
-            request.cookies.set(name, value);
-          });
-          
-          // Create new response with updated cookies
-          supabaseResponse = NextResponse.next({
-            request,
-          });
-          
-          cookiesToSet.forEach(({ name, value, options }) => {
-            supabaseResponse.cookies.set(name, value, options);
-          });
-        },
-      },
+  try {
+    // Check environment variables exist
+    if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
+      console.error('Missing Supabase environment variables!');
+      console.error('URL exists:', !!process.env.NEXT_PUBLIC_SUPABASE_URL);
+      console.error('KEY exists:', !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY);
+      throw new Error('Supabase environment variables not configured');
     }
-  );
 
-  // Refresh session if expired - required for Server Components
-  await supabase.auth.getUser();
+    let supabaseResponse = NextResponse.next({
+      request,
+    });
 
-  return supabaseResponse;
+    const supabase = createServerClient<Database>(
+      process.env.NEXT_PUBLIC_SUPABASE_URL,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+      {
+        cookies: {
+          getAll() {
+            return request.cookies.getAll();
+          },
+          setAll(cookiesToSet) {
+            cookiesToSet.forEach(({ name, value }) => {
+              request.cookies.set(name, value);
+            });
+            
+            supabaseResponse = NextResponse.next({
+              request,
+            });
+            
+            cookiesToSet.forEach(({ name, value, options }) => {
+              supabaseResponse.cookies.set(name, value, options);
+            });
+          },
+        },
+      }
+    );
+
+    await supabase.auth.getUser();
+
+    return supabaseResponse;
+  } catch (error) {
+    console.error('updateSession error:', error);
+    throw error;
+  }
 }
